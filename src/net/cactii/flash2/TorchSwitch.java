@@ -16,7 +16,11 @@ import android.provider.Settings;
 public class TorchSwitch extends BroadcastReceiver {
 
     public static final String TOGGLE_FLASHLIGHT = "net.cactii.flash2.TOGGLE_FLASHLIGHT";
+    public static final String FLASHLIGHT_ON = "net.cactii.flash2.FLASHLIGHT_ON";
+    public static final String FLASHLIGHT_OFF = "net.cactii.flash2.FLASHLIGHT_OFF";
     public static final String TORCH_STATE_CHANGED = "net.cactii.flash2.TORCH_STATE_CHANGED";
+
+    private static final String MSG_TAG = "TorchSwitch";
 
     private SharedPreferences mPrefs;
 
@@ -41,6 +45,24 @@ public class TorchSwitch extends BroadcastReceiver {
                 i.putExtra("strobe", strobe);
                 i.putExtra("period", period);
                 context.startService(i);
+            }
+        } else if (receivingIntent.getAction().equals(FLASHLIGHT_ON)) {
+            boolean bright = receivingIntent.getBooleanExtra("bright", false) |
+                    mPrefs.getBoolean("bright", false);
+            boolean strobe = receivingIntent.getBooleanExtra("strobe", false) |
+                    mPrefs.getBoolean("strobe", false);
+            int period = receivingIntent.getIntExtra("period", 200);
+            Intent i = new Intent(context, TorchService.class);
+            if (!this.TorchServiceRunning(context)) {
+                i.putExtra("bright", bright);
+                i.putExtra("strobe", strobe);
+                i.putExtra("period", period);
+                context.startService(i);
+            }
+        } else if (receivingIntent.getAction().equals(FLASHLIGHT_OFF)) {
+            Intent i = new Intent(context, TorchService.class);
+            if (this.TorchServiceRunning(context)) {
+                context.stopService(i);
             }
         }
     }
